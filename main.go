@@ -1,10 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 const endpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS"
@@ -24,44 +27,80 @@ func mainWithExitCode() int {
 		return 1
 	}
 
-	// Ensure that we have a folder to upload
+	// Ensure that we have a folder to pin
 	if len(os.Args) < 2 {
-		fmt.Println("Need to specify the path to upload")
+		fmt.Println("Need to specify the folder to pin")
 		return 1
 	}
 	folder := os.Args[1]
-
-	// TODO: CHECK THAT FOLDER EXISTS
+	exists, err := folderExists(folder)
+	if err != nil {
+		fmt.Println("Error while reading filesystm:", err)
+		return 2
+	}
+	if !exists {
+		fmt.Println("Folder doesn't exist or isn't a folder")
+		return 1
+	}
 
 	// Check if we have a name for the bundle
-	name := "Uploaded via pinata-uploader"
+	name := "Pinned via Pinata Pinner"
 	if len(os.Args) > 2 {
 		name = os.Args[2]
 	}
 
-	// Upload the folder
-	err := uploadFolder(folder, name)
+	// Pin the folder
+	err = pinFolder(folder, name)
 	if err != nil {
-		fmt.Println("Error while uploading folder:", err)
+		fmt.Println("Error while pinning folder:", err)
 		return 2
 	}
 
 	return 0
 }
 
-// Uploads a folder
-func uploadFolder(folder string, name string) error {
+// Pins a folder
+func pinFolder(folder string, name string) error {
 	// Build the request
 	fu := NewFormUploader()
 
-	files := []string{
-		"index.html",
-		"about.html",
-		"feed.xml",
-		"page/1.html",
-		"page/2.html",
+	// Scan for files and add them
+	files := make([]string, 0)
+	err := filepath.Walk(folder,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			// Add files only
+			if info.Mode().IsRegular() {
+				// Remove the folder from the beginning of the file's name
+				path = strings.TrimPrefix(path, folder)
+				// Trim again an optional path separator
+				path = strings.TrimPrefix(path, string(os.PathSeparator))
+				files = append(files, path)
+			}
+			return nil
+		})
+	if err != nil {
+		return err
 	}
-	fu.AddFiles("file", "../drop", files...)
+	fu.AddFiles("file", folder, files...)
+
+	// Add the name
+	keyValues := make(map[string]string)
+	keyValues["PinnedBy"] = "https://github.com/ItalyPaleAle/PinataPinner"
+	pinataMetadata := struct {
+		Name      string            `json:"name"`
+		KeyValues map[string]string `json:"keyvalues"`
+	}{
+		Name:      name,
+		KeyValues: keyValues,
+	}
+	pinataMetadataJSON, err := json.Marshal(pinataMetadata)
+	if err != nil {
+		return err
+	}
+	fu.AddField("pinataMetadata", string(pinataMetadataJSON))
 
 	// Send the request
 	client := &http.Client{
@@ -86,6 +125,23 @@ func uploadFolder(folder string, name string) error {
 	fmt.Println(string(res))
 
 	return nil
+}
+
+func folderExists(path string) (bool, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		// Ignore the error if it's a "not exists", that's the goal
+		if os.IsNotExist(err) {
+			err = nil
+		}
+		return false, err
+	}
+	if info.IsDir() {
+		// Exists and it's a folder
+		return true, nil
+	}
+	// Exists, but not a folder
+	return false, nil
 }
 
 // Entry point

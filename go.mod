@@ -1,3 +1,3 @@
-module pinataupload
+module pinatapinner
 
 go 1.12

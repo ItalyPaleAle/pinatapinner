@@ -317,29 +317,6 @@ func (fu *formUploader) submit(client *http.Client, targetURL, method string, he
 		}
 	}()
 
-	/*
-		f, _ := os.Create("output.txt")
-		defer f.Close()
-		// make a buffer to keep chunks that are read
-		newBuf := make([]byte, 1024)
-		for {
-			// read a chunk
-			n, err := reader.Read(newBuf)
-			if err != nil && err != io.EOF {
-				panic(err)
-			}
-			if n == 0 {
-				break
-			}
-
-			// write a chunk
-			if _, err := f.Write(newBuf[:n]); err != nil {
-				panic(err)
-			}
-		}
-		return nil, routineErr
-	*/
-
 	//construct HTTP client Request with rd
 	req, err := http.NewRequest(method, targetURL, reader)
 	if err != nil {
