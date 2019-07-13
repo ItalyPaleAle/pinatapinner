@@ -12,7 +12,7 @@ If you have Go 1.12+ installed in your machine, you can just run:
 go get -u github.com/ItalyPaleAle/pinatapinner
 ````
 
-Alternatively, you can download pre-built binaries from the [releases page](https://github.com/ItalyPaleAle/pinatapinner/releases).
+Alternatively, you can download pre-built binaries from the [releases page](https://github.com/ItalyPaleAle/pinatapinner/releases), which are available for Linux (including ARM), macOS and Windows.
 
 ## Pin a folder
 
@@ -21,8 +21,13 @@ Pinata Pinner can only pin folders (if you want to pin individual files, the Pin
 You will need your Pinata API key and secret, that you can get from your [Pinata account page](https://pinata.cloud/account). Set the key and secret as environmental variables:
 
 ````sh
+# On Linux and macOS
 export PINATA_API_KEY="..."
 export PINATA_SECRET_KEY="..."
+
+# On Windows
+set PINATA_API_KEY=...
+set PINATA_SECRET_KEY=...
 ````
 
 To pin a folder called "my_site":
