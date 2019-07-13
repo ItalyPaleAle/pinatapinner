@@ -5,7 +5,7 @@ set -e
 # Build for Linux amd64
 GO111MODULE=on \
 GOOS=linux \
-GOARCH=arm64 \
+GOARCH=amd64 \
   go build \
     -o bin/pinatapinner_linux_amd64
 
