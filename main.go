@@ -88,7 +88,7 @@ func pinFolder(folder string, name string) error {
 
 	// Add the name
 	keyValues := make(map[string]string)
-	keyValues["PinnedBy"] = "https://github.com/ItalyPaleAle/PinataPinner"
+	keyValues["PinnedBy"] = "https://github.com/ItalyPaleAle/pinatapinner"
 	pinataMetadata := struct {
 		Name      string            `json:"name"`
 		KeyValues map[string]string `json:"keyvalues"`
