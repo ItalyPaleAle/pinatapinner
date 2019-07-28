@@ -44,3 +44,10 @@ GOOS=windows \
 GOARCH=amd64 \
   go build \
     -o bin/pinatapinner_win64.exe
+
+# Build for Windows (32-bit)
+GO111MODULE=on \
+GOOS=windows \
+GOARCH=386 \
+  go build \
+    -o bin/pinatapinner_win32.exe

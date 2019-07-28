@@ -1,0 +1,43 @@
+trigger:
+  - master
+
+resources:
+  - repo: self
+
+variables:
+  # Go
+  GOVERSION: '1.12'
+  GOROOT: '/usr/local/go$(GOVERSION)'
+  GOPATH: '/home/vsts/go'
+
+jobs:
+  - job: build
+    displayName: "Build pinatapinner"
+    pool:
+      vmImage: ubuntu-16.04
+    steps:
+      # Set up go environment
+      - bash: |
+          set -e
+
+          # Add to GOBIN to PATH
+          echo '##vso[task.prependpath]$(GOBIN)'
+          echo '##vso[task.prependpath]$(GOROOT)/bin'
+        displayName: "Set up go environment"
+      # Build amd64
+      - bash: |
+          set -e
+          sh build.sh
+        displayName: "Build pinatapinner"
+      # Copy binaries to the artifacts staging directory
+      - task: CopyFiles@2
+        displayName: "Copy binaries to the artifacts staging directory"
+        inputs:
+          sourceFolder: 'bin/'
+          contents: '**/*'
+          targetFolder: '$(Build.ArtifactStagingDirectory)'
+      # Publish binaries as artifacts
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish build artifacts"
+        inputs:
+          artifactName: drop
