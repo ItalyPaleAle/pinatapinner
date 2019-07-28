@@ -121,6 +121,11 @@ func pinFolder(folder string, name string) error {
 		return err
 	}
 
+	// If status code isn't 2xx, we have an error
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return fmt.Errorf("Invalid response status code: %d", resp.StatusCode)
+	}
+
 	// Output the response (should be a JSON)
 	fmt.Println(string(res))
 
